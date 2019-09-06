@@ -9,6 +9,8 @@
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
+#include "ft_printf.h"
+#include "libft.h"
 
 // #define S_IFMT      0170000
 // #define S_IFSOCK    0140000

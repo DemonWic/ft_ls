@@ -72,6 +72,38 @@ char    get_type_file(mode_t st_mode)
     
 // }
 
+char    *ft_get_date(struct stat *buf)
+{
+    time_t now;
+    time_t six_ago;
+    time_t six_forward;
+    char *res;
+    char *buff;
+
+    now = time(NULL);
+    six_ago = now - 31556952 / 2;
+    six_forward = now + 31556952 / 2;
+    res = (char *)malloc(sizeof(char) * 13);
+    if ((six_ago - buf->st_mtime) > 0 || (buf->st_mtime - six_forward) > 0)  // вероятно нужна функция сравнения дат
+    {
+        buff = ctime(&buf->st_mtime);
+        ft_strncpy(res, &buff[4], 6);
+        ft_strncpy(&res[6], &buff[19], 5);
+        // year instead hour and minute
+    }
+    else
+    {
+        buff = ctime(&buf->st_mtime);  
+        // ft_printf("get - %s\n",buff);
+        ft_strncpy(res, &buff[4], 12);  
+        // ft_printf("get - %s\n",res);
+        // res[12] = '\0'; 
+    }
+    return (res);
+}
+
+
+
 char    *get_permisson(mode_t st_mode)
 {
     char *res;
@@ -128,8 +160,8 @@ int main(int argc, char **argv)
     long int total;
     long int total2;
     long int total3;
-    long int uid;
-    long int gid;
+    // long int uid;
+    // long int gid;
     // int k = 0;
     total = 0;
     total2 = 0;
@@ -139,7 +171,11 @@ int main(int argc, char **argv)
     {
         lstat(entry->d_name, &buff);
         res = get_permisson(buff.st_mode);
-        printf("%s  %s\n", res, entry->d_name);
+        usr = getpwuid(buff.st_uid);
+        grp = getgrgid(buff.st_gid); // -- usr->pw_name, grp->gr_name,
+        ft_printf("%s %2li %s  %s  %5li %s %s\n", res, buff.st_nlink, usr->pw_name, grp->gr_name,buff.st_size,ft_get_date(&buff), entry->d_name);
+        // ft_printf("%s\n",ft_get_date(&buff));
+        // ft_printf("%li\n",buff.st_mtime);
         // if c
         //     k = 1; //file
         // if (((buff.st_mode) & 0170000) == 0040000)
@@ -172,6 +208,7 @@ int main(int argc, char **argv)
         // printf("%ld - %s [%d] %d\n",
         //     entry->d_ino, entry->d_name, entry->d_type, entry->d_reclen);
     }
+    // ft_printf("tec time%li\n",time(NULL));
     // printf("total : %li\n", total);
     // printf("total2 : %li\n", total2);
     // printf("total3 : %li\n", total3);
