@@ -40,6 +40,10 @@
 
 //   return datablks + indrblks;
 // }
+time_t ft_difftime(time_t start,time_t end)
+{
+    return (start - end);
+}
 
 
 char    get_type_file(mode_t st_mode)
@@ -81,14 +85,14 @@ char    *ft_get_date(struct stat *buf)
     char *buff;
 
     now = time(NULL);
-    six_ago = now - 31556952 / 2;
-    six_forward = now + 31556952 / 2;
+    six_ago = ft_difftime(now,31556952 / 2);
+    six_forward = ft_difftime(now, -31556952 / 2);
     res = (char *)malloc(sizeof(char) * 13);
-    if ((six_ago - buf->st_mtime) > 0 || (buf->st_mtime - six_forward) > 0)  // вероятно нужна функция сравнения дат
+    if (ft_difftime(six_ago, buf->st_mtime) > 0 || ft_difftime(buf->st_mtime, six_forward) > 0)  // вероятно нужна функция сравнения дат
     {
         buff = ctime(&buf->st_mtime);
-        ft_strncpy(res, &buff[4], 6);
-        ft_strncpy(&res[6], &buff[19], 5);
+        ft_strncpy(res, &buff[4], 7);
+        ft_strncpy(&res[7], &buff[19], 5);
         // year instead hour and minute
     }
     else
@@ -101,6 +105,7 @@ char    *ft_get_date(struct stat *buf)
     }
     return (res);
 }
+
 
 
 
@@ -167,6 +172,7 @@ int main(int argc, char **argv)
     total2 = 0;
     total3 = 0;
     char *res;
+    // time_t t = time(NULL);
     while ( (entry = readdir(dir)) != NULL)
     {
         lstat(entry->d_name, &buff);
@@ -174,6 +180,8 @@ int main(int argc, char **argv)
         usr = getpwuid(buff.st_uid);
         grp = getgrgid(buff.st_gid); // -- usr->pw_name, grp->gr_name,
         ft_printf("%s %2li %s  %s  %5li %s %s\n", res, buff.st_nlink, usr->pw_name, grp->gr_name,buff.st_size,ft_get_date(&buff), entry->d_name);
+        
+        // ft_printf("now - %li  cur - %li  raz - %li  raz2 - %li raz3 - %f\n", t, buff.st_mtime, (buff.st_mtime - t),(t - buff.st_mtime), difftime(t, buff.st_mtime));
         // ft_printf("%s\n",ft_get_date(&buff));
         // ft_printf("%li\n",buff.st_mtime);
         // if c
@@ -200,6 +208,7 @@ int main(int argc, char **argv)
         //     printf(" %s",usr->pw_name);
         // else
         //     printf("    ");
+
         // if (grp != NULL)
         //     printf(" %s", grp->gr_name);
         // else
