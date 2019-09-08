@@ -106,10 +106,28 @@ char    *ft_get_date(struct stat *buf)
     return (res);
 }
 
+char    ft_check_xattr(char *name)
+{
+    acl_t acl;
+    ssize_t size;
+
+    size = listxattr(name, NULL, 0, XATTR_NOFOLLOW);
+    if (size > 0)
+        return ('@');
+    else if ((acl = acl_get_link_np(name, ACL_TYPE_EXTENDED)) != NULL)
+        {
+            acl_free(acl);
+            acl = NULL;
+            return ('+');
+        }
+    else
+        return (' ');
+
+}
 
 
 
-char    *get_permisson(mode_t st_mode)
+char    *get_permisson(mode_t st_mode, char *name)
 {
     char *res;
 
@@ -126,7 +144,7 @@ char    *get_permisson(mode_t st_mode)
     *(++res) = ((st_mode) & S_IXOTH) ? 'x' : '-';
     if ((st_mode) & S_ISVTX)
         *res = ((st_mode) & S_IXOTH) ? 't' : 'T'; // липкий бит нужно посмотреть .
-    *(++res) = ' ';
+    *(++res) = ft_check_xattr(name);
     *(++res) = '\0';
     res -= 11;
     return (res);
@@ -141,46 +159,26 @@ int main(int argc, char **argv)
     struct stat buff;
     struct passwd *usr;
     struct group *grp;
-    // int k;
-    // k = -1;
-    // const time_t *t_ptr;
-    // const char *s;
 
-    // stat("ft_ls.c", &buff);
-    // printf("%s\n", argv[0]);
-    // printf("%li\n", buff.st_mtime);
-    // t_ptr = (time_t *)&(buff.st_mtime);
-    // s = ctime(t_ptr);
-    // printf("%s\n", s);
+    
     dir = opendir(argv[1]);
     if (!dir) {
         perror("diropen");
         exit(1);
     };
-    // char user[4];
-    // int h = 0;
-    // while (h < 4)
-    //     user[h++] = '-';
-    // user[h] = '\0';
     long int total;
-    long int total2;
-    long int total3;
-    // long int uid;
-    // long int gid;
-    // int k = 0;
     total = 0;
-    total2 = 0;
-    total3 = 0;
     char *res;
-    // time_t t = time(NULL);
+  
     while ( (entry = readdir(dir)) != NULL)
     {
         lstat(entry->d_name, &buff);
-        res = get_permisson(buff.st_mode);
+        res = get_permisson(buff.st_mode, entry->d_name);
         usr = getpwuid(buff.st_uid);
         grp = getgrgid(buff.st_gid); // -- usr->pw_name, grp->gr_name,
+       
         ft_printf("%s %2li %s  %s  %5li %s %s\n", res, buff.st_nlink, usr->pw_name, grp->gr_name,buff.st_size,ft_get_date(&buff), entry->d_name);
-        
+        total += buff.st_blocks ;//* 512) / buff.st_blksize;
         // ft_printf("now - %li  cur - %li  raz - %li  raz2 - %li raz3 - %f\n", t, buff.st_mtime, (buff.st_mtime - t),(t - buff.st_mtime), difftime(t, buff.st_mtime));
         // ft_printf("%s\n",ft_get_date(&buff));
         // ft_printf("%li\n",buff.st_mtime);
@@ -217,45 +215,9 @@ int main(int argc, char **argv)
         // printf("%ld - %s [%d] %d\n",
         //     entry->d_ino, entry->d_name, entry->d_type, entry->d_reclen);
     }
-    // ft_printf("tec time%li\n",time(NULL));
-    // printf("total : %li\n", total);
-    // printf("total2 : %li\n", total2);
-    // printf("total3 : %li\n", total3);
+    ft_printf("total : %li\n", total);
 
-//    2585  total  total_blocks gobble_file  ST_NBLOCKS
 
-//  2939  mbswidth
-/*
-# if defined _POSIX_SOURCE || !defined BSIZE
-#  define ST_NBLOCKS(statbuf) \
-  ((statbuf).st_size / ST_NBLOCKSIZE + ((statbuf).st_size % ST_NBLOCKSIZE != 0))
-# else
-    This definition calls st_blocks, which is in the fileblocks module. */
-/*
-#  define ST_NBLOCKS(statbuf) \
-  (S_ISREG ((statbuf).st_mode) || S_ISDIR ((statbuf).st_mode) ? \
-   st_blocks ((statbuf).st_size) : 0)
-# endif
-
-# if defined hpux || defined __hpux__ || defined __hpux
-   HP-UX counts st_blocks in 1024-byte units.
-     This loses when mixing HP-UX and BSD file systems with NFS.  */
-/*
-#  define ST_NBLOCKSIZE 1024
-# else  !hpux */
-/*
-#  if defined _AIX && defined _I386
-     AIX PS/2 counts st_blocks in 4K units.  */
-/*
-#   define ST_NBLOCKSIZE (4 * 1024)
-#  else
-#   if defined _CRAY
-#    define ST_NBLOCKS(statbuf) \
-  (S_ISREG ((statbuf).st_mode) || S_ISDIR ((statbuf).st_mode) \
-   ? (statbuf).st_blocks * ST_BLKSIZE (statbuf) / ST_NBLOCKSIZE : 0)
-#   endif
-#  endif
-# endif*/
     closedir(dir);
     return (0);
 }
