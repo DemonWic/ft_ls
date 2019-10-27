@@ -14,20 +14,21 @@ void listdir(const char *name, int indent)
 
     while ((entry = readdir(dir)) != NULL)
     {
-        if ((entry->d_name)[0] == '.')
-                continue;
-        if (entry->d_type == DT_DIR) 
+        // if ((entry->d_name)[0] == '.')  -- shadow files and directories
+        //         continue;
+        if (entry->d_type == DT_DIR && !(ft_strcmp(entry->d_name, ".") == 0 || ft_strcmp(entry->d_name, "..") == 0) ) 
         {
             char path[1024];
-            if (ft_strcmp(entry->d_name, ".") == 0 || ft_strcmp(entry->d_name, "..") == 0)
-                continue;
+            // if (ft_strcmp(entry->d_name, ".") == 0 || ft_strcmp(entry->d_name, "..") == 0)
+            //     continue;
             snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
             printf("%s\n", path);
             listdir(path, indent + 2);
         } 
         else 
         {
-            printf("%*s- %s\n", indent, "", entry->d_name);
+            // printf("%*s- %s\n", indent, "", entry->d_name);
+            printf("%i  %s\n", indent, entry->d_name);
         }
     }
     closedir(dir);
