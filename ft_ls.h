@@ -11,9 +11,31 @@
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
+#include <unistd.h>
 #include "ft_printf.h"
 #include "libft.h"
 
+
+
+typedef struct		s_file
+{
+    char			*path;
+    char            *name;
+    mode_t          mode;
+    nlink_t         nlink;
+    uid_t           uid;
+    gid_t           gid;
+    time_t          time;
+    off_t           size;
+    blkcnt_t        blocks;
+    unsigned char	 type;
+    struct s_file	*next;
+}					t_file;
+
+void ft_merge_sort_a(t_file **head);
+void ft_merge_sort_t(t_file **head);
+time_t ft_difftime(time_t start,time_t end);
+void    ft_get_permisson(mode_t st_mode, char *name);
 // #define S_IFMT      0170000
 // #define S_IFSOCK    0140000
 // #define S_IFLNK	    0120000
